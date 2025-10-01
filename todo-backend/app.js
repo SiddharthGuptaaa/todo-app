@@ -2,16 +2,15 @@ const path = require("path");
 
 const express = require("express");
 const DB_PATH =
-  "mongodb+srv://root:root@cluster0.yef6no0.mongodb.net/airbnb?retryWrites=true&w=majority&appName=Cluster0";
+  "mongodb+srv://root:root@cluster0.yef6no0.mongodb.net/todo?retryWrites=true&w=majority&appName=Cluster0";
 
-const storeRouter = require("./routes/storeRouter");
-const hostRouter = require("./routes/hostRouter");
+const cors = require("cors");
 
 const rootDir = require("./utils/pathUtil");
 const errorsController = require("./Controllers/errors");
 const { default: mongoose } = require("mongoose");
-const { authRouter } = require("./routes/authRouter");
 const session = require("express-session");
+const todoItemsRouter = require("./routes/todoItemsRouter");
 const MongoDBStore = require("connect-mongodb-session")(session);
 
 const app = express();
@@ -23,32 +22,11 @@ const store = new MongoDBStore({
 });
 app.use(express.urlencoded());
 
-app.use(
-  session({
-    secret: "Knowledge AI with Complete",
-    resave: false,
-    saveUninitialized: true,
-    store: store,
-  })
-);
-
-app.use((req, res, next) => {
-  req, (session.isLoggedIn = req.session.isLoggedIn);
-  next();
-});
-
-app.use(authRouter);
-app.use(storeRouter);
-app.use("/host", (req, res, next) => {
-  if ((req, session.isLoggedIn)) {
-    next();
-  } else {
-    res.redirect("/login");
-  }
-});
-app.use("/host", hostRouter);
-
 app.use(express.static(path.join(rootDir, "public")));
+app.use(express.json());
+app.use(cors());
+
+app.use("/api/todo", todoItemsRouter);
 
 app.use(errorsController.pageNotFound);
 
